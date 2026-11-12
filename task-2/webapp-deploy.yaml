@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-api
+  namespace: webapp-stack
+spec:
+  selector:
+    matchLabels:
+      app: webapp-api
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: webapp-api
+    spec:
+      containers:
+        - name: webapp-api
+          image: webapp-api:task2
+          envFrom:
+            - configMapRef:
+                name: webapp-config
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: app-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: app-password
+          ports:
+            - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
